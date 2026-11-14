@@ -60,7 +60,7 @@ test('menu product details work with keyboard without JavaScript and keep prices
  for(const width of [390,1440])for(const prefix of ['','/en']){
   await page.setViewportSize({width,height:900});await page.goto(prefix+'/menu.html');
   await expect(page.locator('.menu-product')).toHaveCount(35);
-  const card=page.locator('#special-combos .menu-product').first();
+  const card=page.locator('#burgers-wraps .menu-product').first();
   const details=card.locator('details'),control=details.locator('summary');
   const price=card.locator('.price-amount').first(),originalPrice=await price.innerText();
   await expect(details.locator('.product-detail-copy')).toBeHidden();

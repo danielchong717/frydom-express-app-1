@@ -101,15 +101,62 @@ pauseButton?.addEventListener('click',()=>{
 if(ribbon&&typeof window.IntersectionObserver==='function'){new IntersectionObserver(([entry])=>ribbon.classList.toggle('is-offscreen',!entry.isIntersecting)).observe(ribbon);}
 
 const categoryLinks = [...document.querySelectorAll<HTMLAnchorElement>('.category-nav a')];
-if(categoryLinks.length && typeof window.IntersectionObserver==='function'){
-  const visible = new Set<string>();
+if(categoryLinks.length){
+  /* The current tab is the section whose top has most recently passed just under the sticky
+     category bar, not the first section that is still partly on screen. After a tab click the
+     clicked tab stays current: it wins ties (side-by-side sections share a top), and the page
+     bottom (where a short last section can never reach the bar). */
+  const nav=document.querySelector<HTMLElement>('.category-nav');
+  const navTrack=nav?.querySelector<HTMLElement>('.wrap')??null;
   const sections=categoryLinks.map(a=>document.querySelector<HTMLElement>(a.hash)).filter(Boolean) as HTMLElement[];
-  const observer=new IntersectionObserver(entries=>{
-    for(const entry of entries){if(entry.isIntersecting)visible.add(entry.target.id);else visible.delete(entry.target.id);}
-    const current=sections.find(section=>visible.has(section.id));
-    categoryLinks.forEach(a=>{if(a.hash==='#'+current?.id)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');});
-  },{rootMargin:'-155px 0px -50% 0px'});
-  sections.forEach(section=>observer.observe(section));
+  let active='';
+  let jumping=false;
+  let settle=0;
+  const show=(id:string)=>{
+    if(id===active)return;
+    active=id;
+    categoryLinks.forEach(a=>{
+      if(id&&a.hash==='#'+id){
+        a.setAttribute('aria-current','true');
+        if(navTrack&&navTrack.scrollWidth>navTrack.clientWidth){
+          const left=a.offsetLeft-(navTrack.clientWidth-a.offsetWidth)/2;
+          navTrack.scrollTo({left:Math.max(0,left),behavior:'smooth'});
+        }
+      }else a.removeAttribute('aria-current');
+    });
+  };
+  const pick=()=>{
+    /* Anchor jumps land a section well below the bar (scroll-padding plus scroll-margin),
+       so the reading line sits a little lower than the bar itself. */
+    const line=(nav?.getBoundingClientRect().bottom??0)+Math.min(220,window.innerHeight*.3);
+    let top=-Infinity;let current:HTMLElement[]=[];
+    for(const section of sections){
+      const t=section.getBoundingClientRect().top;
+      if(t>line)continue;
+      if(Math.abs(t-top)<4)current.push(section);
+      else if(t>top){top=t;current=[section];}
+    }
+    if(!current.length)return '';
+    const atBottom=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4;
+    if(atBottom&&active&&sections.some(s=>s.id===active&&s.getBoundingClientRect().top<window.innerHeight))return active;
+    return current.some(s=>s.id===active)?active:current[0].id;
+  };
+  const update=()=>{if(!jumping)show(pick());};
+  let frame=0;
+  window.addEventListener('scroll',()=>{
+    if(jumping){window.clearTimeout(settle);settle=window.setTimeout(()=>{jumping=false;update();},150);return;}
+    if(!frame)frame=requestAnimationFrame(()=>{frame=0;update();});
+  },{passive:true});
+  window.addEventListener('resize',update);
+  categoryLinks.forEach(a=>a.addEventListener('click',()=>{
+    const id=a.hash.slice(1);
+    show(id);
+    jumping=true;
+    window.clearTimeout(settle);
+    settle=window.setTimeout(()=>{jumping=false;update();},1200);
+  }));
+  if(location.hash&&sections.some(s=>'#'+s.id===location.hash))show(location.hash.slice(1));
+  else update();
 }
 
 type Attribution = { source:string; utm_source:string; utm_medium:string; utm_campaign:string; referrer:string };

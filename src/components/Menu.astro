@@ -5,6 +5,26 @@ import BreakableText from './BreakableText.astro';
 import {data,locale,t,type Language} from '../lib/site';
 const {lang}=Astro.props as {lang:Language};
 const content=locale(lang);
+
+/* The menu reads loudest to quietest: combos, fried chicken, burgers/wraps/wings,
+   nuggets and sides, then drinks. Each tier gets its own card style and scale. */
+const FRIED_ID='original-recipe-fried-chicken';
+const category=(id:string)=>content.categories.find((c:any)=>c.id===id);
+const itemsIn=(id:string)=>content.menu.filter((item:any)=>item.sectionId===id&&item.id!==FRIED_ID);
+const fried=content.menu.find((item:any)=>item.id===FRIED_ID);
+const friedSection={id:'fried-chicken',name:t(lang,'Fried Chicken','炸鸡'),description:t(lang,'Freshly fried to order, hot and juicy.','现点现炸，外酥里嫩。')};
+
+const mealIds=['special-combos','combos'];
+const standardIds=['burgers-wraps','wings'];
+const rowIds=['boneless-nuggets','sides-drinks'];
+const miniIds=['drinks'];
+const known=[...mealIds,...standardIds,...rowIds,...miniIds];
+/* Any category added to the data later still renders, as a standard section. */
+const extraIds=content.categories.map((c:any)=>c.id).filter((id:string)=>!known.includes(id));
+const sections=(ids:string[])=>ids.map(category).filter(Boolean);
+
+const navOrder=[...sections(mealIds),...(fried?[friedSection]:[]),...sections([...standardIds,...extraIds]),...sections(rowIds),...sections(miniIds)];
+const backLabel=t(lang,'Back to menu categories','返回菜单分类');
 ---
 <section class="page-intro menu-cover" id="menu">
   <img class="menu-cover-photo" src="/assets/food-closeups/real-chicken-fryer.webp" srcset="/assets/food-closeups/real-chicken-fryer-768.webp 768w, /assets/food-closeups/real-chicken-fryer.webp 1536w" sizes="100vw" width="1536" height="1024" alt={t(lang,'Fried chicken lifted out of the fryer basket','刚出锅的炸鸡')} fetchpriority="high" decoding="async"/>
@@ -22,12 +42,51 @@ const content=locale(lang);
   </svg>
   <p>{t(lang,'Discover our latest offers and group meal benefits.','发现近期活动与团餐福利。')}</p>
 </div>
-<nav class="category-nav" aria-label={t(lang,'Menu categories','菜单分类')}><div class="wrap">{content.categories.map((category:any)=><a href={'#'+category.id}>{category.name}</a>)}</div></nav>
-<div class="wrap menu-sections" id="content">
-  {content.categories.map((category:any)=><section class="menu-section" id={category.id} aria-labelledby={category.id+'-title'}>
-    <div class="menu-section-heading"><div><h2 id={category.id+'-title'}><span class="title-highlight">{category.name}</span></h2><p>{category.description}</p></div><a href="#menu" class="section-top" aria-label={t(lang,'Back to menu categories','返回菜单分类')}>↑</a></div>
-    <div class="menu-grid">{content.menu.filter((item:any)=>item.sectionId===category.id).map((item:any)=><MenuProductCard item={item} lang={lang}/>)}</div>
-  </section>)}
+<nav class="category-nav" aria-label={t(lang,'Menu categories','菜单分类')}><div class="wrap">{navOrder.map((c:any)=><a href={'#'+c.id}>{c.name}</a>)}</div></nav>
+<div class="menu-board" id="content">
+
+  <div class="menu-tier menu-tier-meals">
+    <div class="wrap">
+      {sections(mealIds).map((c:any)=><section class="menu-section" id={c.id} aria-labelledby={c.id+'-title'}>
+        <div class="menu-section-heading"><div><h2 id={c.id+'-title'}><span class="title-highlight">{c.name}</span></h2><p>{c.description}</p></div><a href="#menu" class="section-top" aria-label={backLabel}>↑</a></div>
+        <div class="tier-grid tier-grid-meal">{itemsIn(c.id).map((item:any)=><MenuProductCard item={item} lang={lang} tier="meal"/>)}</div>
+      </section>)}
+    </div>
+  </div>
+
+  {fried&&<div class="menu-tier menu-tier-spotlight">
+    <section class="menu-section wrap" id={friedSection.id} aria-labelledby="fried-chicken-title">
+      <div class="menu-section-heading"><div><h2 id="fried-chicken-title"><span class="title-highlight">{friedSection.name}</span></h2><p>{friedSection.description}</p></div><a href="#menu" class="section-top" aria-label={backLabel}>↑</a></div>
+      <MenuProductCard item={fried} lang={lang} tier="spotlight"/>
+    </section>
+  </div>}
+
+  <div class="menu-tier menu-tier-standard">
+    <div class="wrap">
+      {sections([...standardIds,...extraIds]).map((c:any)=><section class="menu-section" id={c.id} aria-labelledby={c.id+'-title'}>
+        <div class="menu-section-heading"><div><h2 id={c.id+'-title'}><span class="title-highlight">{c.name}</span></h2><p>{c.description}</p></div><a href="#menu" class="section-top" aria-label={backLabel}>↑</a></div>
+        <div class="tier-grid tier-grid-standard">{itemsIn(c.id).map((item:any)=><MenuProductCard item={item} lang={lang} tier="standard"/>)}</div>
+      </section>)}
+    </div>
+  </div>
+
+  <div class="menu-tier menu-tier-rows">
+    <div class="wrap tier-columns">
+      {sections(rowIds).map((c:any)=><section class="menu-section" id={c.id} aria-labelledby={c.id+'-title'}>
+        <div class="menu-section-heading"><div><h2 id={c.id+'-title'}><span class="title-highlight">{c.name}</span></h2><p>{c.description}</p></div><a href="#menu" class="section-top" aria-label={backLabel}>↑</a></div>
+        <div class="tier-list">{itemsIn(c.id).map((item:any)=><MenuProductCard item={item} lang={lang} tier="row"/>)}</div>
+      </section>)}
+    </div>
+  </div>
+
+  <div class="menu-tier menu-tier-mini">
+    <div class="wrap">
+      {sections(miniIds).map((c:any)=><section class="menu-section" id={c.id} aria-labelledby={c.id+'-title'}>
+        <div class="menu-section-heading"><div><h2 id={c.id+'-title'}><span class="title-highlight">{c.name}</span></h2><p>{c.description}</p></div></div>
+        <div class="tier-strip">{itemsIn(c.id).map((item:any)=><MenuProductCard item={item} lang={lang} tier="mini"/>)}</div>
+      </section>)}
+    </div>
+  </div>
 </div>
 <aside class="menu-footnotes wrap" aria-label={t(lang,'Menu notes','菜单备注')}>
   {content.menuFootnotes.map((note:string)=><p>{note}</p>)}
