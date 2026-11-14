@@ -28,12 +28,12 @@ const picture=locale(lang).menu.find((item:any)=>item.id==='angus-beef-cheesebur
     const onKey=event=>{if(event.key==='Escape')finish();};
     // This independent upper bound is armed before the overlay can cover anything.
     let fadeTimer,endTimer;
-    const failSafe=setTimeout(finish,1200);
+    const failSafe=setTimeout(finish,950);
     intro.hidden=false;root.setAttribute('data-intro-active','true');
     intro.querySelector('button').addEventListener('click',finish,{once:true});
     document.addEventListener('keydown',onKey);window.addEventListener('pagehide',finish,{once:true});
-    fadeTimer=setTimeout(()=>intro.classList.add('is-leaving'),850);
-    endTimer=setTimeout(finish,1120);
+    fadeTimer=setTimeout(()=>intro.classList.add('is-leaving'),580);
+    endTimer=setTimeout(finish,800);
     const started=performance.now();
     try{
       const canvas=intro.querySelector('canvas');const context=canvas.getContext('2d');
@@ -46,7 +46,7 @@ const picture=locale(lang).menu.find((item:any)=>item.id==='angus-beef-cheesebur
           if(finished)return;
           const elapsed=performance.now()-started;
           const widths=[8,16,32,80,160,480];
-          const step=Math.min(Math.floor(elapsed/145),widths.length-1);
+          const step=Math.min(Math.floor(elapsed/100),widths.length-1);
           const width=widths[step],height=Math.max(1,Math.round(width*canvas.height/canvas.width));
           scratch.width=width;scratch.height=height;
           small.drawImage(image,0,0,width,height);

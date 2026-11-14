@@ -19,9 +19,9 @@ import wordmark from '../assets/transition-wordmark.svg?raw';
     position: absolute; inset: 0; display: grid; place-items: center;
   }
   .wave-brand svg { display: block; width: min(54vw, 784px); height: auto; }
-  .wave-art[data-phase="up"] .wave-sheet { animation: wave-up 1s cubic-bezier(.45,0,.25,1) both; }
-  .wave-art[data-phase="up"] .wave-brand { animation: brand-in .22s .78s both; }
-  .wave-art[data-phase="down"] .wave-sheet { animation: wave-down 1s cubic-bezier(.45,0,.25,1) var(--hold) both,
+  .wave-art[data-phase="up"] .wave-sheet { animation: wave-up .65s cubic-bezier(.45,0,.25,1) both; }
+  .wave-art[data-phase="up"] .wave-brand { animation: brand-in .18s .48s both; }
+  .wave-art[data-phase="down"] .wave-sheet { animation: wave-down .65s cubic-bezier(.45,0,.25,1) var(--hold) both,
       wave-color var(--hold) ease both; }
 
   .wave-art[data-phase="down"] .wave-brand { animation: brand-out .2s var(--hold) both; }
@@ -52,7 +52,7 @@ import wordmark from '../assets/transition-wordmark.svg?raw';
     window.addEventListener('pageshow', event => { if (event.persisted) reset(); });
     if (incoming?.href === location.href && performance.getEntriesByType('navigation')[0]?.type === 'navigate' && !reduced.matches) {
       document.documentElement.dataset.waveArrival = '';
-      const hold = 500;
+      const hold = 300;
       wave.style.setProperty('--hold', hold + 'ms');
       wave.dataset.phase = 'down';
       wave.showPopover();
@@ -70,6 +70,7 @@ import wordmark from '../assets/transition-wordmark.svg?raw';
       if (dest.origin !== location.origin || !/\/(?:[^/]+\.html)?$/.test(dest.pathname) ||
           (dest.pathname === location.pathname && dest.search === location.search)) return;
       event.preventDefault();
+      warm(event);
       if (wave.dataset.phase === 'up') return;
       reset();
       wave.dataset.phase = 'up';
@@ -77,7 +78,26 @@ import wordmark from '../assets/transition-wordmark.svg?raw';
       timer = setTimeout(() => {
         try { sessionStorage.setItem(key, JSON.stringify({href: dest.href})); } catch {}
         location.assign(dest.href);
-      }, 1000);
+      }, 650);
     });
+    // Fetch the next page while the pointer is on its link (and again on click), so it is
+    // usually already downloaded when the wave covers the screen.
+    const fetched = new Set();
+    const warm = event => {
+      const link = event.target.closest?.('a[href]');
+      if (!link || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+      let dest;
+      try { dest = new URL(link.href); } catch { return; }
+      if (dest.origin !== location.origin || !/\/(?:[^/]+\.html)?$/.test(dest.pathname)) return;
+      const page = dest.origin + dest.pathname + dest.search;
+      if (page === location.origin + location.pathname + location.search || fetched.has(page)) return;
+      fetched.add(page);
+      const hint = document.createElement('link');
+      hint.rel = 'prefetch'; hint.href = page; hint.as = 'document';
+      document.head.append(hint);
+    };
+    document.addEventListener('pointerover', warm, {passive: true});
+    document.addEventListener('pointerdown', warm, {passive: true});
+    document.addEventListener('focusin', warm);
   })();
 </script>

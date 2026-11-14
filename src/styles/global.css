@@ -16,7 +16,7 @@
 }
 @layer revision {
   .home-intro[hidden]{display:none}
-  .home-intro{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:var(--rust);color:var(--paper);overflow:hidden;opacity:1;transition:opacity .27s ease}
+  .home-intro{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:var(--rust);color:var(--paper);overflow:hidden;opacity:1;transition:opacity .22s ease}
   .home-intro.is-leaving{opacity:0;pointer-events:none}
   .intro-content{text-align:center;width:min(780px,calc(100% - 40px))}
   .intro-loading{font-family:var(--display);font-size:clamp(64px,9vw,145px);font-weight:600;letter-spacing:-.035em;line-height:1;margin:0;max-width:none;animation:intro-ink .6s step-end infinite}

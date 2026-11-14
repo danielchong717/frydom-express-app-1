@@ -12,7 +12,7 @@ const loud=tier==='meal'||tier==='spotlight';
 const quiet=tier==='row'||tier==='mini';
 ---
 <article class:list={['menu-item','menu-product','tier-'+tier,{'single-price':singlePrice}]} id={item.id} data-item-id={item.id}>
-  <div class="item-photo"><img src={item.image.src} alt={'Frydom Express '+item.name} width={item.image.width} height={item.image.height} loading={loud?'eager':'lazy'} decoding="async"/>{item.imageStatus==='update_pending'&&<span class="photo-note">{t(lang,'Photo update coming soon','图片更新中')}</span>}</div>
+  <div class="item-photo"><img src={item.image.src} alt={'Frydom Express '+item.name} width={item.image.width} height={item.image.height} loading="lazy" decoding="async"/>{item.imageStatus==='update_pending'&&<span class="photo-note">{t(lang,'Photo update coming soon','图片更新中')}</span>}</div>
   <div class="item-body">
     {tier==='meal'&&<span class="meal-tag">{t(lang,'Meal','套餐')}</span>}
     <div class="product-meta">

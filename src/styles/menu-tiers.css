@@ -293,3 +293,32 @@
   .page-menu #main .menu-product.tier-mini h3 { font-size: 16px; }
   .page-menu #main .menu-product.tier-mini .item-prices dd { font-size: 15px; }
 }
+
+/* ---------- Orange card theme ----------
+   Every menu card (and the sides/boneless list panels) uses the original site's brand orange
+   (#ed8f21, from its stylesheet's 主色 palette) behind the wooden board. Type is the original
+   site's dark brown, which reads clearly on that orange. */
+.page-menu { --menu-orange: #ed8f21; --menu-orange-dark: #cd5817; --orange-ink: #2f2418; --orange-ink-soft: #4a3520; }
+.page-menu #main .menu-board :is(.menu-product.tier-meal, .menu-product.tier-standard, .tier-list),
+.page-menu #main #fried-chicken .menu-product.tier-spotlight {
+  background: var(--menu-orange);
+  box-shadow: 0 10px 28px #8a4a1033;
+}
+.page-menu #main .menu-board :is(.tier-meal, .tier-standard, .tier-row) h3,
+.page-menu #main #fried-chicken .menu-product.tier-spotlight h3 { color: var(--orange-ink); }
+.page-menu #main .menu-board :is(.tier-meal, .tier-standard, .tier-row) :is(.item-description, .item-note, .item-prices dd, .item-prices dd span),
+.page-menu #main #fried-chicken .menu-product.tier-spotlight .item-description { color: var(--orange-ink); }
+.page-menu #main .menu-board :is(.tier-standard, .tier-row) .item-prices :is(dt, small) { color: var(--orange-ink-soft); }
+.page-menu #main .menu-board .tier-meal .meal-tag { background: #fff8ec; color: var(--menu-orange-dark); }
+.page-menu #main .menu-board .tier-standard .product-details summary { background: #fff8ec; color: var(--menu-orange-dark); }
+.page-menu #main .menu-board .tier-standard .product-details summary:hover { background: #ffe8b8; }
+.page-menu #main #fried-chicken .menu-product.tier-spotlight .item-prices > div { background: #fff8ec; }
+.page-menu #main #fried-chicken .menu-product.tier-spotlight .item-prices dt { color: var(--menu-orange-dark); }
+.page-menu #main #fried-chicken .menu-product.tier-spotlight .item-prices dd { color: var(--orange-ink); }
+.page-menu #main .menu-board .menu-product.tier-row { border-bottom-color: #2f241826; }
+.page-menu #main .menu-board .menu-product.tier-row .product-meta::after { border-bottom-color: #2f241859; }
+.page-menu #main .menu-board .menu-product .photo-note { background: #fff8ec; color: var(--orange-ink); }
+/* White outlines suit red type on cream; on the orange cards they only blur the names. */
+body.page-menu #main .menu-board :is(.tier-meal, .tier-standard, .tier-row, .tier-spotlight) :is(h3, h3 *, p, dd, dt, span) {
+  -webkit-text-stroke-width: 0 !important;
+}
